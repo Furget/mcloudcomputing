@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage</title>
+    <title>Platform Donasi Online</title>
     <link rel="stylesheet" href="../css/home.css">
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1197.0.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const hamburger = document.querySelector('.hamburger');
@@ -13,6 +14,53 @@
             hamburger.addEventListener('click', () => {
                 sidebar.classList.toggle('active');
             });
+
+            // Konfigurasi AWS SDK
+            AWS.config.update({
+                region: 'us-east-1', // Ganti dengan region Anda
+                credentials: new AWS.CognitoIdentityCredentials({
+                    IdentityPoolId: 'us-east-1:example-identity-pool-id',
+                }),
+            });
+
+            const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+            // Fungsi untuk mengambil data kampanye
+            function loadCampaigns() {
+                const params = {
+                    TableName: 'Campaigns', // Ganti dengan nama tabel DynamoDB Anda
+                };
+
+                dynamodb.scan(params, (err, data) => {
+                    if (err) {
+                        console.error('Gagal memuat data:', err);
+                        return;
+                    }
+
+                    const campaigns = data.Items;
+                    const donationSection = document.getElementById('donation-section');
+                    donationSection.innerHTML = '';
+
+                    campaigns.forEach(campaign => {
+                        const card = `
+                            <div class="donation-card">
+                                <h3>${campaign.title}</h3>
+                                <p>${campaign.description}</p>
+                                <button onclick="donate('${campaign.id}')">Donasi Sekarang</button>
+                            </div>`;
+                        donationSection.innerHTML += card;
+                    });
+                });
+            }
+
+            // Fungsi untuk menangani tombol "Donasi Sekarang"
+            function donate(campaignId) {
+                alert(`Anda akan mendonasikan untuk kampanye dengan ID: ${campaignId}`);
+                // Tambahkan logika pengiriman donasi di sini
+            }
+
+            // Muat data kampanye saat halaman selesai dimuat
+            loadCampaigns();
         });
     </script>
 </head>
@@ -30,25 +78,13 @@
         <a href="#">Logout</a>
     </div>
     <main>
-        <h2>Selamat Datang, [Nama User]!</h2>
-        <p>Platform ini mempermudah Anda untuk memberikan dan mengelola donasi secara online. Jelajahi program donasi yang tersedia di bawah ini.</p>
-        <div class="donation-section">
-            <div class="donation-card">
-                <h3>Bantu Pendidikan Anak</h3>
-                <p>Dukung pendidikan anak-anak di wilayah terpencil untuk masa depan yang lebih cerah.</p>
-                <button>Donasi Sekarang</button>
-            </div>
-            <div class="donation-card">
-                <h3>Bencana Alam</h3>
-                <p>Bantu korban bencana alam dengan donasi Anda untuk kebutuhan darurat dan pemulihan.</p>
-                <button>Donasi Sekarang</button>
-            </div>
-            <div class="donation-card">
-                <h3>Pelestarian Lingkungan</h3>
-                <p>Dukung inisiatif penghijauan dan pelestarian lingkungan untuk generasi mendatang.</p>
-                <button>Donasi Sekarang</button>
-            </div>
+        <h2>Selamat Datang!</h2>
+        <p>Jelajahi program donasi yang tersedia di bawah ini:</p>
+
+        <div class="donation-section" id="donation-section">
+            <!-- Kampanye akan dimuat secara dinamis -->
         </div>
+
         <div class="create-fundraiser">
             <h3>Ingin Membuat Penggalangan Dana Anda Sendiri?</h3>
             <button onclick="window.location.href='profil.html';">Buat Penggalangan Dana</button>
@@ -59,4 +95,3 @@
     </footer>
 </body>
 </html>
- 
