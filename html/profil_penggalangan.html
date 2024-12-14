@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Penggalangan Dana</title>
     <style>
+        /* Gaya CSS tetap sama seperti sebelumnya */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -83,6 +84,48 @@
         .buttons a:hover {
             background-color: #0056b3;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .modal-content button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 
@@ -100,7 +143,7 @@
             </div>
         </div>
         <div class="donation-info">
-            <h2 id="totalDonation">Rp52.400.960</h2>
+            <h2 id="totalDonation">Rp0</h2>
             <p id="donationPurpose">Tujuan: Tidak Tersedia</p>
             <p id="donationTarget">Target: Tidak Tersedia</p>
         </div>
@@ -109,18 +152,64 @@
         </div>
     </div>
 
+    <!-- Modal Input Donasi -->
+    <div class="modal" id="donationModal">
+        <div class="modal-content">
+            <h3>Masukkan Jumlah Donasi</h3>
+            <input type="number" id="donationAmount" placeholder="Jumlah uang">
+            <button id="confirmBtn">Konfirmasi</button>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Ambil data profil dari localStorage
             const profileData = JSON.parse(localStorage.getItem('profileData'));
+            const totalDonationElement = document.getElementById('totalDonation');
+            const modal = document.getElementById('donationModal');
+            const donateBtn = document.getElementById('donateBtn');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const donationAmountInput = document.getElementById('donationAmount');
 
+            // Set data awal dari profil
             if (profileData) {
                 document.getElementById('profileName').textContent = profileData.name;
                 document.getElementById('profileLocation').textContent = `Lokasi: ${profileData.location}`;
                 document.getElementById('donationPurpose').textContent = `Tujuan: ${profileData.purpose}`;
                 document.getElementById('donationTarget').textContent = `Target: Rp${new Intl.NumberFormat('id-ID').format(profileData.target)}`;
-            } else {
-                alert('Data profil belum tersedia. Silakan isi formulir terlebih dahulu.');
             }
+
+            // Ambil total donasi dari localStorage
+            let totalDonation = parseInt(localStorage.getItem('totalDonation')) || 0;
+            totalDonationElement.textContent = `Rp${new Intl.NumberFormat('id-ID').format(totalDonation)}`;
+
+            // Tampilkan modal input donasi
+            donateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.style.display = 'flex';
+            });
+
+            // Konfirmasi input donasi
+            confirmBtn.addEventListener('click', () => {
+                const donationAmount = parseInt(donationAmountInput.value);
+                if (donationAmount && donationAmount > 0) {
+                    totalDonation += donationAmount;
+                    localStorage.setItem('totalDonation', totalDonation);
+                    totalDonationElement.textContent = `Rp${new Intl.NumberFormat('id-ID').format(totalDonation)}`;
+                    alert(`Terima kasih atas donasi sebesar Rp${new Intl.NumberFormat('id-ID').format(donationAmount)}!`);
+                    modal.style.display = 'none';
+                    donationAmountInput.value = '';
+                } else {
+                    alert('Masukkan jumlah donasi yang valid!');
+                }
+            });
+
+            // Tutup modal ketika klik di luar modal
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
         });
     </script>
 </body>
